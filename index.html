@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Aligned</title>
+<meta name="description" content="The Aligned by O'Merlin Academy: the 66-Day Total Alignment Challenge and the 28-week Powerhouse Programme in one app that works offline.">
+<meta name="theme-color" content="#0b1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aligned">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/playfair-display-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/instrument-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="splash" aria-hidden="true"><div class="in"><img src="icons/mark.png" alt=""><b>The Aligned</b><small>O'Merlin Academy</small></div></div>
+<div class="shell">
+  <aside class="rail">
+    <a class="brand" href="#today" aria-label="The Aligned home"><img src="icons/mark.png" alt=""><span><b>The Aligned</b><small>O'Merlin Academy</small></span></a>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+    <div class="railfoot">
+      <button class="btn sm" id="install-rail" hidden>Install the app</button>
+      <a class="btn sm ghost" href="#settings">Settings &amp; backup</a>
+      <div class="status" id="status"><i></i><span>Works offline</span></div>
+    </div>
+  </aside>
+  <main>
+    <div class="topbar">
+      <a class="brand" href="#today"><img src="icons/mark.png" alt=""><span><b>The Aligned</b><small>O'Merlin Academy</small></span></a>
+      <a class="btn sm ghost" href="#settings" aria-label="Settings and backup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
+    </div>
+    <div id="view" class="stack"></div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="print"></div>
+<noscript><p style="padding:24px">The Aligned needs JavaScript turned on.</p></noscript>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
