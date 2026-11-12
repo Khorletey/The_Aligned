@@ -1,5 +1,5 @@
 /* The Aligned service worker: caches the whole app so it runs offline. */
-const CACHE = "aligned-6d54cc8b32";
+const CACHE = "aligned-e32bdf46be";
 const ASSETS = [
   "./",
   "./app.js",

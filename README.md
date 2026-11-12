@@ -11,7 +11,8 @@ The site must be served over HTTPS for install and offline mode to work.
 so updates reach people promptly.
 
 ## Updating
-After changing any file, regenerate sw.js's asset list so phones pick up the new version.
+After changing any file, change the version text on line 2 of sw.js (for example aligned-v2, aligned-v3)
+so phones pick up the new version. If you add a new file, also add it to the ASSETS list in sw.js.
 Members then see "A new version is ready · Update".
 
 ## Data
