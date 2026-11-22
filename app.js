@@ -80,6 +80,7 @@ const DEF = {
   profile: { name: "", start: todayStr(), currency: "GH₵", cohort: "", unlockAll: false, joined: todayStr(), onboarded: false, lastBackup: "", cue: "", morningTime: "05:00", eveningTime: "19:00", _ts: 0 },
   daily: { days: {}, _ts: 0 },
   prog: { weeks: {}, capstone: { after: "", vision: "", commit: "" }, _ts: 0 },
+  voice: { entries: {}, words: [], _ts: 0 },
   logs: { fin: [], honor: [], time: [], reframes: [], checkins: [], mentees: [], split: { give: 10, save: 20, live: 70 }, partner: { name: "", phone: "", rhythm: "Weekly", report: "" }, _ts: 0 }
 };
 const DOCS = Object.keys(DEF);
@@ -101,7 +102,7 @@ function saveNow() { try { localStorage.setItem(LS, JSON.stringify(S)); storageO
 function touch(k) { S[k]._ts = Date.now(); clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 250); }
 window.addEventListener("pagehide", saveNow);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") saveNow(); });
-const hasData = () => Object.keys(S.daily.days).length || Object.keys(S.prog.weeks).length || S.logs.fin.length;
+const hasData = () => Object.keys(S.daily.days).length || Object.keys(S.voice.entries).length || Object.keys(S.prog.weeks).length || S.logs.fin.length;
 
 /* ---------- derived ---------- */
 const curDayRaw = () => daysBetween(S.profile.start, todayStr()) + 1;
@@ -147,6 +148,7 @@ function route() {
   const h = location.hash.replace("#", "") || "today"; let m;
   if ((m = h.match(/^course-(\d)$/))) return { view: "programme", course: +m[1] };
   if ((m = h.match(/^week-(\d)-(\d)$/))) return { view: "programme", key: `${m[1]}-${m[2]}` };
+  if (h === "lesson-speaking") return { view: "programme", lesson: true };
   if (h === "capstone") return { view: "journal", capstone: true };
   return { view: ["today", "programme", "journal", "tools", "movement", "settings"].includes(h) ? h : "today" };
 }
@@ -157,7 +159,7 @@ function renderNav() {
 function paint(animate) {
   renderNav();
   const r = route(), el = $("#view");
-  el.innerHTML = r.view === "today" ? vToday() : r.view === "programme" ? (r.key ? vWeek(r.key) : r.course ? vCourse(r.course) : vProgramme())
+  el.innerHTML = r.view === "today" ? vToday() : r.view === "programme" ? (r.lesson ? vpLesson() : r.key ? vWeek(r.key) : r.course ? vCourse(r.course) : vProgramme())
     : r.view === "journal" ? (r.capstone ? vCapstone() : vJournal()) : r.view === "tools" ? vTools() : r.view === "movement" ? vMovement() : vSettings();
   el.className = animate && !document.startViewTransition ? "stack enter" : "stack";
   afterPaint();
@@ -252,6 +254,7 @@ function vToday() {
       <h2 style="margin-top:14px">${esc(law.name)}</h2><blockquote>${esc(law.line)}</blockquote>
       <div class="action"><p class="eyebrow">Today's action step</p><p style="margin-top:4px">${esc(actionOf(d))}</p></div>
       ${selDay ? `<div style="margin-top:12px"><button class="btn sm ghost" data-act="day" data-d="${ad}">Back to today</button></div>` : ""}</div>`;
+  if (!future) h += vpCard(d);
   if (future) h += `<div class="empty">Day ${d} opens on ${fmtD(dateOf(d))}. Finish today first.</div>`;
   else {
     const sec = RHYTHM[secTab], items = rhythmItems(secTab, ph.n), sk = SECKEY[secTab];
@@ -283,6 +286,7 @@ function vProgramme() {
   let h = `<div><p class="eyebrow">The Powerhouse Programme</p><h1 style="margin-top:6px">From ordinary to thought leader through problem-solving</h1><p class="muted" style="margin-top:8px;max-width:62ch">Seven courses, four weeks each, 28 weeks in all. Each week has a teaching, practical exercises and a milestone you write here. Each milestone opens the next week, because the sequence only works cumulatively.</p></div>`;
   h += `<div class="card gold">${WAVES()}<div class="row between"><div class="row" style="flex-wrap:nowrap">${glyph(COURSE_ICON[cw.c - 1])}<div><p class="eyebrow">Where you are</p><h3 style="margin-top:4px">Course ${cw.c}, Week ${cw.w}: ${esc(cw.week.title)}</h3></div></div><a class="btn primary" href="#week-${cw.c}-${cw.w}">${done ? "Continue" : "Start Week 1"}</a></div>
     <div class="timeline" aria-label="${done} of 28 weeks complete">${PROGRAMME.courses.map(c => `<span class="${courseWeeksDone(c.n) === 4 ? "on" : ""}" title="Course ${c.n}"></span>`).join("")}</div><p class="muted num" style="font-size:13px;margin-top:6px;position:relative">${done} of 28 weeks complete</p></div>`;
+  h += vpLessonCard();
   h += `<div class="stack">${PROGRAMME.courses.map(c => { const n = courseWeeksDone(c.n), locked = !wkUnlocked(`${c.n}-1`); const circ = 2 * Math.PI * 16; return `<a class="course ${locked ? "locked" : ""}" href="#course-${c.n}">${glyph(COURSE_ICON[c.n - 1])}<span style="min-width:0"><span class="cn">COURSE ${c.n}</span><b style="display:block">${esc(c.title)}</b><span class="muted" style="display:block;font-size:13px">${esc(c.weeks.map(w => w.mname).join(" · "))}</span></span><span>${locked ? '<span class="chip lock">Locked</span>' : `<svg class="ringlet" viewBox="0 0 40 40" aria-label="${n} of 4 weeks"><circle cx="20" cy="20" r="16" fill="none" stroke="#26324c" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="${n === 4 ? "#7fc4a4" : "#c9a849"}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ * (1 - n / 4)}" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" fill="#efe8d8" font-size="11" font-weight="700">${n}/4</text></svg>`}</span></a>`; }).join("")}</div>`;
   h += `<div class="card"><h3>The sequence, in order</h3><ol class="principles" style="margin-top:12px">${PROGRAMME.principles.map(([a, b]) => `<li><span><strong style="color:var(--gold-hi)">${inl(a)}</strong> ${inl(b)}</span></li>`).join("")}</ol></div>`;
   h += `<details class="card"><summary style="cursor:pointer;font-weight:600">Facilitator notes</summary><div class="prose" style="margin-top:12px"><ul>${PROGRAMME.facilitator.map(f => `<li>${inl(f)}</li>`).join("")}</ul></div></details>`;
@@ -295,6 +299,7 @@ function vCourse(n) {
   h += `<div class="card gold">${WAVES()}<p class="eyebrow">Non-negotiable principle</p><p style="font-family:var(--display);font-size:19px;margin-top:6px;position:relative">${inl(c.principle)}</p></div>`;
   h += `<div class="card"><h3>Weeks</h3><div style="margin-top:6px">${c.weeks.map(w => { const key = `${c.n}-${w.n}`, un = wkUnlocked(key), dn = wkDone(key), dr = !dn && (wk(key).ms || "").trim(); return `<a class="week ${un ? "" : "locked"}" href="#week-${key}"><span class="w">WEEK ${w.n}</span><span><b>${esc(w.title)}</b><span class="muted" style="display:block;font-size:13px">Milestone: ${esc(w.mname)}</span></span><span class="chip ${dn ? "done" : dr ? "draft" : un ? "" : "lock"}">${dn ? "Done" : dr ? "Draft" : un ? "Open" : "Locked"}</span></a>`; }).join("")}</div></div>`;
   h += `<div class="card"><h3>End-of-course deliverables</h3><div class="list" style="margin-top:8px">${c.deliverables.map(d => `<div><span>${inl(d)}</span></div>`).join("")}</div>${c.bridge ? `<p class="muted" style="margin-top:10px;font-size:14px">${inl(c.bridge)}</p>` : ""}</div>`;
+  if (n === 6) h += vpLessonCard();
   return h;
 }
 function vWeek(key) {
@@ -355,12 +360,13 @@ function vCapstone() {
 }
 
 /* ---------- views: TOOLS ---------- */
-const TOOLTABS = [["finance", "Finance"], ["honor", "Honor log"], ["time", "Time audit"], ["reframe", "Reframes"], ["account", "Accountability"], ["mentees", "Mentees"]];
+const TOOLTABS = [["finance", "Finance"], ["honor", "Honor log"], ["time", "Time audit"], ["reframe", "Reframes"], ["account", "Accountability"], ["mentees", "Mentees"], ["voice", "Voice & Pen"]];
 const money = n => `${S.profile.currency} ${Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 function vTools() {
   let h = `<div><p class="eyebrow">Tools</p><h1 style="margin-top:6px">Stewardship tools</h1><p class="muted" style="margin-top:6px">The trackers the challenge and the programme ask you to keep.</p></div>`;
   h += `<div class="tabs" role="tablist">${TOOLTABS.map(([k, l]) => `<button role="tab" aria-selected="${k === toolTab}" class="${k === toolTab ? "on" : ""}" data-act="tooltab" data-k="${k}">${l}</button>`).join("")}</div>`;
   const L = S.logs;
+  if (toolTab === "voice") return h + vpTools();
   if (toolTab === "finance") {
     const sum = t => L.fin.filter(e => e.type === t).reduce((a, e) => a + Number(e.amt || 0), 0);
     const inc = sum("income"), inv = sum("investment"), exp = sum("expense"), giv = sum("giving"), sp = L.split, tot = (+sp.give) + (+sp.save) + (+sp.live);
@@ -465,7 +471,7 @@ function vSettings() {
   <label class="check" for="st-unlock" style="border:0"><input type="checkbox" id="st-unlock" data-act="unlock" ${p.unlockAll ? "checked" : ""}><span class="box"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg></span><span><b>Facilitator mode</b><span class="muted" style="display:block;font-size:13px">Opens every programme week and every challenge day so you can review or teach ahead. Leave it off for your own journey.</span></span></label></div>
   <div class="card stack"><div class="row" style="flex-wrap:nowrap">${glyph('<path d="M12 22a2.5 2.5 0 0 0 2.5-2.5h-5A2.5 2.5 0 0 0 12 22z"/><path d="M18 16V11a6 6 0 0 0-12 0v5l-2 2h16z"/>')}<div><h3>Daily rhythm &amp; reminders</h3><p class="muted" style="font-size:14px">Your cue and times shape the Today screen. Adding them to your calendar gives you alerts for all 66 days, even offline.</p></div></div>${cueFields("st")}
   <div class="row"><button class="btn primary" data-act="savecue" data-p="st">Save</button><button class="btn" data-act="ics">${ICON.calendar}Add to my calendar</button></div></div>
-  <div class="card stack"><div class="row" style="flex-wrap:nowrap">${glyph('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>')}<div><h3>Backup &amp; restore</h3><p class="muted" style="font-size:14px">Everything is stored on this device, and the app works without internet for the whole programme. ${lb ? `Last backup: ${fmtD(lb)}.` : "No backup yet."} Keep a backup file in WhatsApp, Google Drive or email, and restore it on a new phone.</p></div></div>
+  <div class="card stack"><div class="row" style="flex-wrap:nowrap">${glyph('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>')}<div><h3>Backup &amp; restore</h3><p class="muted" style="font-size:14px">Everything is stored on this device, and the app works without internet for the whole programme. ${lb ? `Last backup: ${fmtD(lb)}.` : "No backup yet."} Keep a backup file in WhatsApp, Google Drive or email, and restore it on a new phone. Voice &amp; Pen recordings stay on this device only: your written answers and words are in the backup, but the audio is not.</p></div></div>
   <div class="row"><button class="btn primary" data-act="backup">${ICON.download}Download backup</button><label class="btn" for="imp-file" style="cursor:pointer">Restore from file<input type="file" id="imp-file" accept="application/json,.json" data-act="importfile" class="sr"></label></div>
   <p class="muted" style="font-size:13px">${storageOK ? "Saving on this device is working." : "This browser is blocking device storage. Turn off private browsing, then download a backup."}${persisted ? " Storage is protected from automatic clean-up." : ""}</p></div>
   <div class="card stack"><h3>App</h3><p class="muted" style="font-size:14px">${isStandalone() ? "You're using the installed app." : deferredInstall ? "Install it to open from your home screen, full-screen and offline." : isIOS() ? "On iPhone: tap the Share button in Safari, then Add to Home Screen." : "Use your browser's menu and choose Install app or Add to Home screen."}</p>
@@ -556,7 +562,7 @@ document.addEventListener("click", e => {
   else if (a === "replayintro") onboarding(true);
   else if (a === "reset") {
     if (!confirmReset) { confirmReset = true; render(false); setTimeout(() => { confirmReset = false; if (route().view === "settings") render(false); }, 5000); return; }
-    confirmReset = false; DOCS.forEach(k => { S[k] = clone(DEF[k]); }); saveNow(); location.hash = "today"; render(); toast("Everything was cleared"); onboarding();
+    confirmReset = false; DOCS.forEach(k => { S[k] = clone(DEF[k]); }); vpWipe(); saveNow(); location.hash = "today"; render(); toast("Everything was cleared"); onboarding();
   }
 });
 document.addEventListener("input", e => {
@@ -645,7 +651,7 @@ function onboarding(replay) {
 }
 
 /* ---------- PWA: install, offline, updates ---------- */
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.2.1";
 let deferredInstall = null, persisted = false;
 const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -809,6 +815,7 @@ function summaryText(d, inProgress) {
   const inv = sum("investment"), exp = sum("expense"), giv = sum("giving");
   const mp = [inv && `invested ${cur}${inv}`, giv && `gave ${cur}${giv}`, exp && `spent ${cur}${exp}`].filter(Boolean); if (mp.length) lines.push(`Money: ${mp.join(", ")}`);
   if (honor.length) lines.push(`Honored: ${honor.join(", ")}`);
+  if ((r.x || {})[VP_X]) lines.push("Voice & Pen: done");
   if ((r.note || "").trim()) lines.push(`Reflection: ${r.note.trim().split("\n")[0]}`);
   if (d < 66 && dayRec(d + 1).focus) lines.push(`Tomorrow's focus: ${dayRec(d + 1).focus}`);
   if (streak() > 1) lines.push(`Streak: ${streak()} days`);

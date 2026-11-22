@@ -18,3 +18,8 @@ Members then see "A new version is ready · Update".
 ## Data
 Everything is stored on each person's device (localStorage). Members back up and restore
 with a .json file under Settings & backup. Nothing is sent to a server.
+
+## Voice & Pen
+A daily 20-minute step in the Execution Zone (voice.js): speak a 60-second answer using PREP, write it and cut 20%, learn one precise word,
+plus a weekly stretch on days 7, 14, 21 and so on. Recordings are stored in the device's IndexedDB (never uploaded, not in the backup file).
+Written answers, words and scores are in the backup. Progress is under Tools, Voice & Pen.

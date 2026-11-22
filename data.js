@@ -144,7 +144,8 @@ const RHYTHM = {
     ["Complete today's action step", 1],
     ["Time blocked in 1-hour production units", 1],
     ["Hourly check: production vs. consumption", 1],
-    ["Every task measured by value delivered", 1]
+    ["Every task measured by value delivered", 1],
+    ["Voice & Pen: speak it, write it, learn a word (20 min)", 1]
   ]},
   evening: { label: "Evening", sub: "Review & Relationships · 7:00–9:00 PM", items: [
     ["Daily financial audit: investment vs. expense", 1],

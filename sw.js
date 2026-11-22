@@ -1,9 +1,10 @@
 /* The Aligned service worker: caches the whole app so it runs offline. */
-const CACHE = "aligned-e32bdf46be";
+const CACHE = "aligned-v121-voicepen";
 const ASSETS = [
   "./",
   "./app.js",
   "./data.js",
+  "./voice.js",
   "./fonts/instrument-sans-latin-400-normal.woff2",
   "./fonts/instrument-sans-latin-500-normal.woff2",
   "./fonts/instrument-sans-latin-600-normal.woff2",
